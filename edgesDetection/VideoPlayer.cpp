@@ -1,6 +1,7 @@
 #pragma once
 #include "VideoPlayer.h"
 #include "EdgesDetector.h"
+#include "Timer.h"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/core.hpp"     
@@ -12,50 +13,60 @@ using namespace cv;
 
 // play video, show mean frame and filtered mean frame 
 void VideoPlayer::playVideo() {
-    VideoCapture inputVideo(pathToVideo);
-    if (!inputVideo.isOpened()) {
+    VideoCapture newFrameCap(pathToVideo);
+    VideoCapture oldFrameCap(pathToVideo);
+    if (!newFrameCap.isOpened() || !oldFrameCap.isOpened()) {
         cout << "Error opening video stream or file" << endl;
         return;
     }
 
-    Size size((int)inputVideo.get(CAP_PROP_FRAME_WIDTH), (int)inputVideo.get(CAP_PROP_FRAME_HEIGHT));
-    Mat frame;
-    Mat m(size, CV_32F, Scalar::all(0));
     const int framesLimit = 100;
+
+    Size size((int)newFrameCap.get(CAP_PROP_FRAME_WIDTH), (int)newFrameCap.get(CAP_PROP_FRAME_HEIGHT));
+    Mat frame, oldFrame;
+    Mat mean(size, CV_32F, Scalar::all(0));
     int frameCounter = 0;
+
     while (true) {
-        inputVideo >> frame;
+        cout << "New frame" << '\n';
+        newFrameCap >> frame;
         if (frame.empty()) {
             break;
         }
 
-        imshow("new frame", frame);
-        waitKey(1);
         Mat gray;
-        cvtColor(frame, frame, COLOR_BGR2GRAY);
-        frame.convertTo(frame, CV_32F, 1.0 / 255.0);
-        m = m + frame;
-        cout << "Frame number: " << frameCounter++ << endl;
+        cvtColor(frame, gray, COLOR_BGR2GRAY);
+        gray.convertTo(gray, CV_32F, 1.0 / 255.0);        
+        mean = mean + gray;
+
+        cout << "Frame number: " << frameCounter << "\n";
+        frameCounter++;
 
         if (frameCounter >= framesLimit) {
-            int oldFrameNumber = (frameCounter - framesLimit);
-            inputVideo.set(CAP_PROP_POS_FRAMES, oldFrameNumber);
-            inputVideo >> frame;
-            cvtColor(frame, frame, COLOR_BGR2GRAY);
-            frame.convertTo(frame, CV_32F, 1.0 / 255.0);
-            m = m - frame;
-            inputVideo.set(CAP_PROP_POS_FRAMES, frameCounter);
-            Mat mean;
-            m.convertTo(mean, CV_8U, 255.0 * 1.0 / framesLimit);
-            imshow("Mean frame", mean);
-            waitKey(1);
+            oldFrameCap >> oldFrame;
+            if (oldFrame.empty()) {
+                break;
+            }
+            
+            Mat gray1;
+            cvtColor(oldFrame, gray1, COLOR_BGR2GRAY);
+            gray1.convertTo(gray1, CV_32F, 1.0 / 255.0);            
+            mean = mean - gray1;
+
+            Mat meanCV8U;
+            mean.convertTo(meanCV8U, CV_8U, 255.0 * 1.0 / framesLimit);
+            imshow("Mean frame", meanCV8U);
+            
             Mat outputImage;
-            detector->detect(mean, outputImage);
+            detector->detect(meanCV8U, outputImage);
             imshow("Filtered mean frame", outputImage);
-            waitKey(1);
         }
+
+        imshow("New frame", frame);
+        waitKey(1);
     }
 
-    inputVideo.release();
+    newFrameCap.release();
+    oldFrameCap.release();
     destroyAllWindows();
 }
