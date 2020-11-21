@@ -4,7 +4,6 @@
 #include "DFTFilter.h"
 #include "Laplacian.h"
 
-
 using namespace std;
 
 int main() {

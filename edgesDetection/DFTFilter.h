@@ -20,4 +20,3 @@ class DFTFilter : public EdgesDetector {
 
 		void createComplexImage(const cv::Mat& i, cv::Mat& complexImage);
 };
-
