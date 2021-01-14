@@ -4,6 +4,7 @@
 #include "Timer.h"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
+#include <opencv2/imgcodecs.hpp>
 #include "opencv2/core.hpp"     
 #include "opencv2/videoio.hpp"  
 #include <iostream>
@@ -33,6 +34,7 @@ void VideoPlayer::playVideo() {
     while (true) {
         Mat gray1;
         frameCounter++;
+        cout << "frameCounter = " << frameCounter << "\n";
 
         if (!tNew.joinable()) {
             tNew = std::thread([&]() {
@@ -64,21 +66,25 @@ void VideoPlayer::playVideo() {
             tOld.join();
 
             cout << "1 thread: ";
-            t1.printLastDuration();
+            //t1.printLastDuration();
             cout << "2 thread: ";
-            t2.printLastDuration();
+            //t2.printLastDuration();
 
             Mat meanCV8U;
             mean.convertTo(meanCV8U, CV_8U, 255.0 * 1.0 / framesLimit);
             imshow("Mean frame", meanCV8U);
+            // write mean to file
+            //imwrite("E:\\Downloads\\dumps\\2lapl100\\m" + to_string(frameCounter) + ".jpg", meanCV8U);
 
             Mat outputImage;
             detector->detect(meanCV8U, outputImage);
             imshow("Filtered mean frame", outputImage); 
+            // write result to file
+            //imwrite("E:\\Downloads\\dumps\\2lapl100\\r" + to_string(frameCounter) + ".jpg", outputImage);
         }
         else {
             tNew.join();
-            t1.printLastDuration();
+            //t1.printLastDuration();
         }
         
         imshow("New frame", frame);
