@@ -8,6 +8,7 @@
 #include "opencv2/core.hpp"     
 #include "opencv2/videoio.hpp"  
 #include <iostream>
+#include <deque>
 
 using namespace std;
 using namespace cv;
@@ -21,13 +22,14 @@ void VideoPlayer::playVideo() {
         return;
     }
 
-    const int framesLimit = 100;
+    const int framesLimit = 500;
+    deque<Mat> frames;
 
     Size size((int)newFrameCap.get(CAP_PROP_FRAME_WIDTH), (int)newFrameCap.get(CAP_PROP_FRAME_HEIGHT));
     Mat frame, oldFrame;
     Mat mean(size, CV_32F, Scalar::all(0));
     int frameCounter = 0;
-    mutex mtx, mtx1;
+    mutex mtx, mDeque;
     thread tNew, tOld;
     Timer t1, t2;
 
@@ -40,10 +42,16 @@ void VideoPlayer::playVideo() {
             tNew = std::thread([&]() {
                 t1.saveTimePoint();
                 newFrameCap >> frame;
+                {
+                    lock_guard<mutex> lock(mDeque);
+                    frames.push_front(frame.clone());
+                }
                 cv::cvtColor(frame, gray1, COLOR_BGR2GRAY);
                 gray1.convertTo(gray1, CV_32F, 1.0 / 255.0);
-                lock_guard<mutex> lock(mtx);
-                mean = mean + gray1;
+                {
+                    lock_guard<mutex> lock(mtx);
+                    mean = mean + gray1;
+                }
                 t1.saveTimePoint();
             });
         }
@@ -52,12 +60,20 @@ void VideoPlayer::playVideo() {
             if (!tOld.joinable()) {
                 tOld = std::thread([&]() {
                     t2.saveTimePoint();
-                    oldFrameCap >> oldFrame;
+                    //oldFrameCap >> oldFrame;
+                    Mat oldFrame;
+                    {
+                        lock_guard<mutex> lock(mDeque);
+                        oldFrame = frames.back();
+                        frames.pop_back();
+                    }
                     Mat gray2;
                     cvtColor(oldFrame, gray2, COLOR_BGR2GRAY);
                     gray2.convertTo(gray2, CV_32F, 1.0 / 255.0);
-                    lock_guard<mutex> lock(mtx1);
-                    mean = mean - gray2;
+                    {
+                        lock_guard<mutex> lock(mtx);
+                        mean = mean - gray2;
+                    }
                     t2.saveTimePoint();
                 });
             }
