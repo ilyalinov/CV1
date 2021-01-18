@@ -1,4 +1,6 @@
+#pragma once
 #include "Laplacian.h"
+
 #include <opencv2/imgproc.hpp>
 
 void Laplacian::detect(cv::Mat& inputImage, cv::Mat& outputImage, int filterSize)

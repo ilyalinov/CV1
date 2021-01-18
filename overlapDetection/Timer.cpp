@@ -1,4 +1,6 @@
+#pragma once
 #include "Timer.h"
+
 #include <iostream>
 
 void Timer::saveTimePoint() {

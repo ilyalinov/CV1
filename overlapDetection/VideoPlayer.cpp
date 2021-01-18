@@ -1,14 +1,17 @@
 #pragma once
 #include "VideoPlayer.h"
-#include "EdgesDetector.h"
-#include "Timer.h"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include <opencv2/imgcodecs.hpp>
-#include "opencv2/core.hpp"     
-#include "opencv2/videoio.hpp"  
+
 #include <iostream>
 #include <deque>
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/core.hpp>     
+#include <opencv2/videoio.hpp>  
+
+#include "EdgesDetector.h"
+#include "Timer.h"
 
 using namespace std;
 using namespace cv;
@@ -40,8 +43,9 @@ void VideoPlayer::playVideo() {
 
         if (!tNew.joinable()) {
             tNew = std::thread([&]() {
-                t1.saveTimePoint();
+                //t1.saveTimePoint();
                 newFrameCap >> frame;
+                t1.saveTimePoint();
                 {
                     lock_guard<mutex> lock(mDeque);
                     frames.push_front(frame.clone());
@@ -82,18 +86,23 @@ void VideoPlayer::playVideo() {
             tOld.join();
 
             cout << "1 thread: ";
-            //t1.printLastDuration();
+            t1.printLastDuration();
             cout << "2 thread: ";
-            //t2.printLastDuration();
+            t2.printLastDuration();
 
             Mat meanCV8U;
             mean.convertTo(meanCV8U, CV_8U, 255.0 * 1.0 / framesLimit);
-            imshow("Mean frame", meanCV8U);
+            //imshow("Mean frame", meanCV8U);
             // write mean to file
             //imwrite("E:\\Downloads\\dumps\\2lapl100\\m" + to_string(frameCounter) + ".jpg", meanCV8U);
 
+            t1.saveTimePoint();
             Mat outputImage;
             detector->detect(meanCV8U, outputImage);
+            t1.saveTimePoint();
+            cout << "detector: ";
+            t1.printLastDuration();
+            t1.printFullDuration();
             imshow("Filtered mean frame", outputImage); 
             // write result to file
             //imwrite("E:\\Downloads\\dumps\\2lapl100\\r" + to_string(frameCounter) + ".jpg", outputImage);
