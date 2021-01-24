@@ -5,5 +5,5 @@ class EdgesDetector {
 	public:
 		virtual void detect(cv::Mat& inputImage, cv::Mat& outputImage, int filterSize = 30) = 0;
 
-		~EdgesDetector() {};
+		virtual ~EdgesDetector() {};
 };
