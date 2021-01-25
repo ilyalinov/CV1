@@ -42,7 +42,7 @@ void VideoPlayer::playVideo() {
 
         //t1.saveTimePoint();
         newFrameCap >> frame;
-        t1.saveTimePoint();
+        //t1.saveTimePoint();
         if (frame.empty()) {
             return;
         }
@@ -50,20 +50,20 @@ void VideoPlayer::playVideo() {
         cv::cvtColor(frame, gray, COLOR_BGR2GRAY);
         gray.convertTo(gray, CV_32F, 1.0 / 255.0);
         mean = mean + gray;
-        t1.saveTimePoint();
-        t1.printLastDuration();
+        //t1.saveTimePoint();
+        //t1.printLastDuration();
         
         if (frameCounter % framesLimit == 0) {
             mean.convertTo(meanCV8U, CV_8U, 255.0 * 1.0 / framesLimit);
             // write mean to file
             //imwrite("E:\\Downloads\\dumps\\2lapl100\\m" + to_string(frameCounter) + ".jpg", meanCV8U);
 
-            t1.saveTimePoint();
+            //t1.saveTimePoint();
             detector->detect(meanCV8U, outputImage);
             mean.setTo(0);
-            t1.saveTimePoint();
-            cout << "detector: ";
-            t1.printLastDuration();
+            //t1.saveTimePoint();
+            //cout << "detector: ";
+            //t1.printLastDuration();
         }
 
         t1.saveTimePoint();

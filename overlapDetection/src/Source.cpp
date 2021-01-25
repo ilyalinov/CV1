@@ -1,4 +1,6 @@
 #pragma once
+#include <iostream>
+
 #include "VideoPlayer.h"
 #include "EdgesDetector.h"
 #include "DFTFilter.h"
@@ -6,8 +8,13 @@
 
 using namespace std;
 
-int main() {
-    string inputName = "E:\\Downloads\\dumps\\resized_short1.avi";
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cout << "Usage: overlapDetection <Video_Path>" << "\n";
+        return -1;
+    }
+
+    string inputName = argv[1];
     EdgesDetector* dft = new DFTFilter();
     EdgesDetector* lapl = new Laplacian();
     //VideoPlayer v(inputName, dft);
