@@ -1,4 +1,3 @@
-#pragma once
 #include "VideoPlayer.h"
 
 #include <iostream>

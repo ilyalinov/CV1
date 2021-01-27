@@ -1,4 +1,3 @@
-#pragma once
 #include "DFTFilter.h"
 
 #include "opencv2/core.hpp"
