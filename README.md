@@ -1,4 +1,7 @@
 ### Overlap detection app for ADAS
+
+[![Build Status](https://travis-ci.com/ilyalinov/CV1.svg?branch=dev)](https://travis-ci.com/ilyalinov/CV1)
+
 #### Prerequisites:
 * GCC or Visual C++ compiler
 * OpenCV
