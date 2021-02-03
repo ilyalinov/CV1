@@ -3,14 +3,14 @@
 
 class DFTFilter : public EdgesDetector {
 	public:	
-		DFTFilter() { filterSize = 60; };
+		DFTFilter() { filterSize_ = 32; };
 
-		DFTFilter(int filterSize) : filterSize(filterSize) {};
+		DFTFilter(int filterSize) : filterSize_(filterSize) {};
 
-		virtual void detect(cv::Mat& inputImage, cv::Mat& outputImage, int filterSize = 30);
+		virtual void detect(cv::Mat& inputImage, cv::Mat& outputImage);
 
 	private:
-		int filterSize = 30;
+		int filterSize_;
 
 		void dftShift(cv::Mat& i, cv::Mat& outI);
 

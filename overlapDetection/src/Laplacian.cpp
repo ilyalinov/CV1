@@ -2,7 +2,7 @@
 
 #include <opencv2/imgproc.hpp>
 
-void Laplacian::detect(cv::Mat& inputImage, cv::Mat& outputImage, int filterSize)
+void Laplacian::detect(cv::Mat& inputImage, cv::Mat& outputImage)
 {
 	cv::Mat dst;
 	int ksize = 3;

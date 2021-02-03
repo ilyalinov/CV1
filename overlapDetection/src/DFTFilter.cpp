@@ -8,13 +8,13 @@
 using namespace cv; 
 
 // remove low frequencies from the image
-void DFTFilter::detect(Mat& i, Mat& outputImg, int filterSize) {
+void DFTFilter::detect(Mat& i, Mat& outputImg) {
     Rect roi = Rect(0, 0, i.cols & -2, i.rows & -2);
     i = i(roi);
     Mat magI;
 
     Mat H;
-    synthesizeFilter(H, i.size(), filterSize);
+    synthesizeFilter(H, i.size(), filterSize_);
 
     Mat complexI, complexH, complexIH;
     createComplexImage(i, complexI);
@@ -86,7 +86,8 @@ void DFTFilter::calcMS(Mat& i, Mat& magI) {
 // create dft high pass filter
 void DFTFilter::synthesizeFilter(Mat& H, Size size, int filterSize) {
     H = Mat(size, CV_32F, Scalar(1));
-    H(Rect(H.cols / 2 - (filterSize / 2), H.rows / 2 - (filterSize / 2), filterSize, filterSize)) = 0;
+    //H(Rect(H.cols / 2 - (filterSize / 2), H.rows / 2 - (filterSize / 2), filterSize, filterSize)) = 0;
+    circle(H, Point(H.cols / 2, H.rows / 2), filterSize / 2, Scalar(0), FILLED);
     dftShift(H, H);
 }
 
