@@ -7,7 +7,7 @@ class VideoPlayer {
 	public:
 		VideoPlayer(std::string& inputName, EdgesDetector* e) : pathToVideo(inputName), detector(e) {};
 
-		void playVideo();
+		void processVideo();
 
 	private:
 		void initializeVideoWriter(cv::VideoWriter& v, cv::VideoCapture& cap, int compressionFactor);
@@ -22,12 +22,13 @@ class VideoPlayer {
 		
 		void showResults(const cv::Mat& inputFrame, const cv::Mat& mean, const cv::Mat& outputImage);
 
+		void draw_components(cv::Mat& src, cv::Mat& dst, cv::Mat& labelImage, std::vector<cv::Vec3b> colors);
 
 		const bool videoRecordingFlag = false;
-		const bool meanStandardDeviationMedianRecording = true;
+		const bool meanStandardDeviationMedianRecording = false;
 		const bool saveResultsFlag = false;
 		const bool showResultsFlag = true;
-		const int compressionFactor = 1;
+		const int compressionFactor = 2;
 		const int framesLimit = 500;
 		std::string pathToVideo;
 		EdgesDetector* detector;

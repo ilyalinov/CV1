@@ -16,8 +16,8 @@
 using namespace std;
 using namespace cv;
 
-// play video, show mean frame and filtered mean frame 
-void VideoPlayer::playVideo() {
+// process video, calculate mean frame, filtered mean frame and detect overlap 
+void VideoPlayer::processVideo() {
     VideoCapture newFrameCap(pathToVideo);
     if (!newFrameCap.isOpened()) {
         cout << "Error opening video stream or file" << endl;
@@ -28,6 +28,9 @@ void VideoPlayer::playVideo() {
     if (videoRecordingFlag) {
         initializeVideoWriter(v, newFrameCap, compressionFactor);
     }
+
+    //ofstream f("f.txt");
+    //ofstream tr("t.txt");
 
     Mat frame;
     Size outputSize = getOutputSize(newFrameCap, compressionFactor);
@@ -49,16 +52,80 @@ void VideoPlayer::playVideo() {
         }
         
         //t1.saveTimePoint();
-        resize(frame, frame, Size(), 1.0 / compressionFactor, 1.0 / compressionFactor);
+        resize(frame, frame, outputSize);
+        //t1.saveTimePoint();
+        //t1.printLastDuration();
         //t1.saveTimePoint();
         
         calculateMean(mean32F, meanCV8U, frame, frameCounter);
-        detector->detect(meanCV8U, outputImage);
         //t1.saveTimePoint();
-        //cout << "detector: ";
         //t1.printLastDuration();
+        t1.saveTimePoint();
+        
+        detector->detect(meanCV8U, outputImage);
+        t1.saveTimePoint();
+        cout << "detector: ";
+        t1.printLastDuration();
 
-        calculateMeanStandardDeviationMedian(meanCV8U, outputImage);
+        Mat i = outputImage;
+        //imshow("filtered", i);
+        //waitKey(0);
+
+        Mat i1;
+        Timer t;
+        t.saveTimePoint();
+        
+        //cv::blur(i, i1, Size(15, 15));
+        GaussianBlur(i, i1, Size(9, 9), 0);
+        //imshow("gaussian blur", i1);
+        //waitKey(0);
+
+        morphologyEx(i1, i1, MORPH_CLOSE, Mat::ones(15, 15, CV_8U));
+        //imshow("closing", i1);
+        //waitKey(0);
+
+        threshold(i1, i1, 40, 255, THRESH_BINARY);
+        //imshow("threshold", i1);
+        //waitKey(0);
+        //ofstream f(to_string(k) + ".txt");
+        //f << i1;
+        //f.close();
+        Mat stats, centroids, labelImage;
+        //t.saveTimePoint();
+        int nLabels = connectedComponentsWithStats(i1, labelImage, stats, centroids, 8, CV_32S);
+        t.saveTimePoint();
+        //t.printLastDuration();
+
+        std::vector<Vec3b> colors(nLabels);
+        colors[0] = Vec3b(0, 0, 0);
+        std::vector<int> trueLabels;
+        std::vector<Mat> trueMasks;
+        std::vector<Mat> masks;
+
+        for (int label = 1; label < nLabels; ++label) {
+            colors[label] = Vec3b((rand() & 255), (rand() & 255), (rand() & 255));
+        }
+
+        Mat dst(i1.size(), CV_8UC3);
+        draw_components(i1, dst, labelImage, colors);
+        imshow("components", dst);
+        //imwrite("E:\\Downloads\\dumps\\1_components\\" + to_string(frameCounter) + ".jpg", dst);
+
+        // points intensity chart
+        //Point p1(277, 37);
+        //Point p2(165, 162);
+        //Vec3b v1 = frame.at<Vec3b>(p1.y, p1.x);
+        //Vec3b v2 = frame.at<Vec3b>(p2.y, p2.x);
+        //circle(frame, Point(p1), 5, Scalar(0, 255, 0));
+        //circle(frame, Point(p2), 5, Scalar(0, 255, 0));
+        //int in1 = ((int)(v1.val[0]) + (int)(v1.val[1]) + (int)(v1.val[2])) / 3;
+        //int in2 = ((int)(v2.val[0]) + (int)(v2.val[1]) + (int)(v2.val[2])) / 3;
+        //f << in1 << "\n";
+        //tr << in2 << "\n";
+
+        if (meanStandardDeviationMedianRecording) {
+            calculateMeanStandardDeviationMedian(meanCV8U, outputImage);
+        }
 
         if (videoRecordingFlag) {
             v << outputImage;
@@ -104,10 +171,20 @@ void VideoPlayer::calculateMean(cv::Mat& mean32F, cv::Mat& meanCV8U, const cv::M
     }
 }
 
+void VideoPlayer::draw_components(Mat& src, Mat& dst, Mat& labelImage, std::vector<Vec3b> colors) {
+    for (int r = 0; r < dst.rows; ++r) {
+        for (int c = 0; c < dst.cols; ++c) {
+            int label = labelImage.at<int>(r, c);
+            Vec3b& pixel = dst.at<Vec3b>(r, c);
+            pixel = colors[label];
+        }
+    }
+}
+
 void VideoPlayer::calculateMeanStandardDeviationMedian(const cv::Mat& mean, const cv::Mat& outputImage) {
-    ofstream f1("med_mean.txt", ios::app);
+    //ofstream f1("med_mean.txt", ios::app);
+    //ofstream f3("med_filter.txt", ios::app);
     ofstream f2("disp_mean.txt", ios::app);
-    ofstream f3("med_filter.txt", ios::app);
     ofstream f4("disp_filter.txt", ios::app);
     ofstream f5("mean_filter.txt", ios::app);
     Mat m, disp;
@@ -122,7 +199,7 @@ void VideoPlayer::calculateMeanStandardDeviationMedian(const cv::Mat& mean, cons
     med = array[array.size() / 2];
     array.clear();
 
-    f1 << med << "\n";
+    //f1 << med << "\n";
     f2 << disp.at<double>(0, 0) << "\n";
 
     meanStdDev(outputImage, m, disp);
@@ -132,13 +209,13 @@ void VideoPlayer::calculateMeanStandardDeviationMedian(const cv::Mat& mean, cons
     std::nth_element(array.begin(), array.begin() + array.size() / 2, array.end());
     med = array[array.size() / 2];
 
-    f3 << med << "\n";
+    //f3 << med << "\n";
     f4 << disp.at<double>(0, 0) << "\n";
     f5 << m.at<double>(0, 0) << "\n";
     
-    f1.close();
+    //f1.close();
     f2.close();
-    f3.close();
+    //f3.close();
     f4.close();
     f5.close();
 }
@@ -151,10 +228,11 @@ void VideoPlayer::showResults(const cv::Mat& inputFrame, const cv::Mat& mean, co
 }
 
 void VideoPlayer::saveResults(const cv::Mat& inputFrame, const cv::Mat& mean, const cv::Mat& outputImage, int frameCounter) {
+    string path = "E:\\Downloads\\dumps\\lapl2_" + to_string(compressionFactor) + "\\";
     // write input frame to file
-    imwrite("E:\\Downloads\\dumps\\2lapl100\\s" + to_string(frameCounter) + ".jpg", inputFrame);
+    imwrite(path + "s\\" + "s" + to_string(frameCounter) + ".jpg", inputFrame);
     // write mean to file
-    imwrite("E:\\Downloads\\dumps\\2lapl100\\m" + to_string(frameCounter) + ".jpg", mean);
+    imwrite(path + "m\\" + "m" + to_string(frameCounter) + ".jpg", mean);
     // write result to file
-    imwrite("E:\\Downloads\\dumps\\2lapl100\\r" + to_string(frameCounter) + ".jpg", outputImage);
+    imwrite(path + "r\\" + "r" + to_string(frameCounter) + ".jpg", outputImage);
 }

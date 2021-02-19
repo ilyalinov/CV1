@@ -14,11 +14,11 @@ int main(int argc, char** argv) {
     }
 
     string inputName = argv[1];
-    EdgesDetector* dft = new DFTFilter();
+    EdgesDetector* dft = new DFTFilter(10);
     EdgesDetector* lapl = new Laplacian();
     //VideoPlayer v(inputName, dft);
     VideoPlayer v(inputName, lapl);
-    v.playVideo();
+    v.processVideo();
     delete dft;
     delete lapl;
     return 0;
