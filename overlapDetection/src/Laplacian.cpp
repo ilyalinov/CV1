@@ -5,6 +5,7 @@
 void Laplacian::detect(cv::Mat& inputImage, cv::Mat& outputImage)
 {
 	cv::Mat dst;
+	double sigma = 0;
 	int ksize = 3;
 	int scale = 1;
 	int delta = 0;
@@ -13,7 +14,7 @@ void Laplacian::detect(cv::Mat& inputImage, cv::Mat& outputImage)
 	//cv::Mat grad_x, grad_y;
 	//cv::Mat abs_grad_x, abs_grad_y;
 
-	cv::GaussianBlur(inputImage, inputImage, cv::Size(ksize, ksize), 0, 0, cv::BORDER_DEFAULT);
+	cv::GaussianBlur(inputImage, inputImage, cv::Size(ksize, ksize), sigma, sigma, cv::BORDER_DEFAULT);
 	
 	//cv::Sobel(dst1, grad_x, ddepth, 1, 0, ksize, scale, delta, cv::BORDER_DEFAULT);
 	//cv::Sobel(dst1, grad_y, ddepth, 0, 1, ksize, scale, delta, cv::BORDER_DEFAULT);
