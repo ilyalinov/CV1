@@ -1,5 +1,7 @@
 #include "DFTFilter.h"
 
+#include <iostream>
+
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
@@ -11,22 +13,28 @@ using namespace cv;
 void DFTFilter::detect(Mat& i, Mat& outputImg) {
     Rect roi = Rect(0, 0, i.cols & -2, i.rows & -2);
     i = i(roi);
-    Mat magI;
+
+    Mat padded;
+    int m = getOptimalDFTSize(i.rows);
+    int n = getOptimalDFTSize(i.cols);
+    std::cout << m << " " << n << "\n";
+    copyMakeBorder(i, padded, 0, m - i.rows, 0, n - i.cols, BORDER_CONSTANT, Scalar::all(0));
 
     Mat H;
-    synthesizeFilter(H, i.size(), filterSize_);
+    synthesizeFilter(H, padded.size(), filterSize_);
 
     Mat complexI, complexH, complexIH;
-    createComplexImage(i, complexI);
+    createComplexImage(padded, complexI);
     dft(complexI, complexI, DFT_SCALE);
     createComplexImage(H, complexH);
     mulSpectrums(complexI, complexH, complexIH, 0);
 
     idft(complexIH, complexIH);
-    Mat planes[2] = { Mat_<float>(i.clone()), Mat::zeros(i.size(), CV_32F) };
+    Mat planes[2] = { Mat_<float>(padded.clone()), Mat::zeros(padded.size(), CV_32F) };
     split(complexIH, planes);
     outputImg = planes[0];
     outputImg.convertTo(outputImg, CV_8U);
+    //outputImg = outputImg(roi);
     normalize(outputImg, outputImg, 0, 255, NORM_MINMAX);
 }
 
