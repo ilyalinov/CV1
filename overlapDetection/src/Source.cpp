@@ -1,25 +1,15 @@
 #include <iostream>
+#include <string>
 
-#include "VideoPlayer.h"
+#include "VideoHandler.h"
 #include "EdgesDetector.h"
 #include "DFTFilter.h"
 #include "Laplacian.h"
-
-using namespace std;
+#include "Configuration.h"
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
-        std::cout << "Usage: overlapDetection <Video_Path>" << "\n";
-        return -1;
-    }
-
-    string inputName = argv[1];
-    EdgesDetector* dft = new DFTFilter(10);
-    EdgesDetector* lapl = new Laplacian();
-    //VideoPlayer v(inputName, dft);
-    VideoPlayer v(inputName, lapl);
+    Configuration c("config.cfg");
+    VideoHandler v(&c);
     v.processVideo();
-    delete dft;
-    delete lapl;
     return 0;
 }

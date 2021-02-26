@@ -27,7 +27,10 @@
     <ClCompile Include="..\src\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\VideoPlayer.cpp">
+    <ClCompile Include="..\src\VideoHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,7 +47,10 @@
     <ClInclude Include="..\src\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\VideoPlayer.h">
+    <ClInclude Include="..\src\VideoHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

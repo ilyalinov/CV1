@@ -25,7 +25,7 @@ void DFTFilter::detect(Mat& i, Mat& outputImg) {
 
     Mat complexI, complexH, complexIH;
     createComplexImage(padded, complexI);
-    dft(complexI, complexI, DFT_SCALE);
+    cv::dft(complexI, complexI, DFT_SCALE);
     createComplexImage(H, complexH);
     mulSpectrums(complexI, complexH, complexIH, 0);
 
@@ -73,7 +73,7 @@ void DFTFilter::calcMS(Mat& i, Mat& magI) {
 
     // add to the expanded another plane with zeros
     merge(planes, 2, complexI);
-    dft(complexI, complexI);
+    cv::dft(complexI, complexI);
     split(complexI, planes);
 
     // planes[0] = magnitude

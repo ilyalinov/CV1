@@ -19,18 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\DFTFilter.cpp" />
     <ClCompile Include="..\src\Laplacian.cpp" />
     <ClCompile Include="..\src\Source.cpp" />
     <ClCompile Include="..\src\Timer.cpp" />
-    <ClCompile Include="..\src\VideoPlayer.cpp" />
+    <ClCompile Include="..\src\VideoHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\DFTFilter.h" />
     <ClInclude Include="..\src\EdgesDetector.h" />
     <ClInclude Include="..\src\Laplacian.h" />
     <ClInclude Include="..\src\Timer.h" />
-    <ClInclude Include="..\src\VideoPlayer.h" />
+    <ClInclude Include="..\src\VideoHandler.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

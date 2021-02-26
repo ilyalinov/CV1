@@ -6,4 +6,9 @@ class EdgesDetector {
 		virtual void detect(cv::Mat& inputImage, cv::Mat& outputImage) = 0;
 
 		virtual ~EdgesDetector() {};
+
+		enum class DetectorType{
+			laplacian,
+			dft
+		};
 };
