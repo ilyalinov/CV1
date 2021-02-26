@@ -5,14 +5,16 @@ project(overlapDetection)
 find_package(OpenCV REQUIRED)
 
 set(NAME_SRC
+	src/Configuration.cpp
 	src/DFTFilter.cpp
 	src/Laplacian.cpp
 	src/Source.cpp
 	src/Timer.cpp
-	src/VideoPlayer.cpp
+	src/VideoHandler.cpp
 )
 
-set(NAME_HEADERS       
+set(NAME_HEADERS   
+	src/Configuration.h    
 	src/DFTFilter.h
 	src/EdgesDetector.h
 	src/Laplacian.h
