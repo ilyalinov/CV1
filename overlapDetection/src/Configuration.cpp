@@ -35,9 +35,10 @@ Configuration::Configuration(const string& filename) {
 		meanStandardDeviationMedianRecording = false;
 		saveResultsFlag = false;
 		showResultsFlag = true;
-		compressionFactor = 2;
+		sizeFactor = 2;
 		int framesLimit = 200;
 		detectorType = EdgesDetector::DetectorType::laplacian;
+		smoothingType = Smoothing::SmoothingType::mean;
 	}
 }
 
@@ -57,8 +58,8 @@ bool Configuration::hasShowResultsFlag() {
 	return showResultsFlag;
 }
 
-int Configuration::getCompressionFactor() {
-	return compressionFactor;
+int Configuration::getSizeFactor() {
+	return sizeFactor;
 }
 
 int Configuration::getFramesLimit()
@@ -74,15 +75,20 @@ EdgesDetector::DetectorType Configuration::getEdgesDetectorType() {
 	return detectorType;
 }
 
+Smoothing::SmoothingType Configuration::getSmoothingType() {
+	return Smoothing::SmoothingType();
+}
+
 void Configuration::print() {
 	cout << videoRecordingFlag << "\n";
 	cout << meanStandardDeviationMedianRecording << "\n";
 	cout << saveResultsFlag << "\n";
 	cout << showResultsFlag << "\n"; 
-	cout << compressionFactor << "\n";
+	cout << sizeFactor << "\n";
 	cout << framesLimit << "\n";
 	cout << pathToVideo << "\n";
 	cout << static_cast<std::underlying_type<EdgesDetector::DetectorType>::type>(detectorType) << "\n";
+	cout << static_cast<std::underlying_type<Smoothing::SmoothingType>::type>(smoothingType) << "\n";
 }
 
 bool Configuration::storeValue(string& key, string& value) {
@@ -132,14 +138,14 @@ bool Configuration::storeValue(string& key, string& value) {
 				isError = true;
 			}
 			break;
-		case StringCode::cCompressionFactor:
+		case StringCode::cSizeFactor:
 			try {
 				int n = stoi(value);
 				if (n > 10 || n < 1) {
 					isError = true;
 				}
 				else {
-					compressionFactor = n;
+					sizeFactor = n;
 				}
 			}
 			catch (const std::exception& e) {
@@ -176,6 +182,17 @@ bool Configuration::storeValue(string& key, string& value) {
 				isError = true;
 			}
 			break;
+		case StringCode::smoothing:
+			if (value == "mean") {
+				smoothingType = Smoothing::SmoothingType::mean;
+			}
+			else if (value == "exp") {
+				smoothingType = Smoothing::SmoothingType::exp;
+			}
+			else {
+				isError = true;
+			}
+			break;
 		case StringCode::other:
 			isError = true;
 			break;
@@ -190,7 +207,7 @@ Configuration::StringCode Configuration::getCode(string& s) {
 	if (s == "mean.standard.deviation.median.recording") return StringCode::cMeanStandardDeviationRecording;
 	if (s == "save.results") return StringCode::cSaveResults;
 	if (s == "show.results") return StringCode::cShowResults;
-	if (s == "compression.factor") return StringCode::cCompressionFactor;
+	if (s == "size.factor") return StringCode::cSizeFactor;
 	if (s == "frames.limit") return StringCode::cFramesLimit;
 	if (s == "path.to.video") return StringCode::cPathToVideo;
 	if (s == "detector") return StringCode::detector;

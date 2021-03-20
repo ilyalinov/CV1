@@ -1,12 +1,15 @@
 #pragma once
 #include <opencv2/videoio.hpp>
 
-#include "EdgesDetector.h"
+#include "EdgesDetectorCreator.h"
 #include "Configuration.h"
+#include "SmoothingCreator.h"
+#include "EdgesDetector.h"
+#include "Smoothing.h"
 
 class VideoHandler {
 	public:
-		VideoHandler(Configuration* c);
+		VideoHandler(Configuration* c, EdgesDetectorCreator* e, SmoothingCreator* s);
 
 		void processVideo();
 
@@ -29,6 +32,7 @@ class VideoHandler {
 
 		Configuration* configuration;
 		EdgesDetector* detector;
+		Smoothing* smoothing;
 		cv::VideoWriter v;
 		cv::VideoCapture newFrameCap;
 };

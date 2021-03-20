@@ -13,20 +13,17 @@
 #include "Laplacian.h"
 #include "DFTFilter.h"
 #include "Timer.h"
+#include "Mean.h"
+#include "ExpFilter.h"
 
 using namespace std;
 using namespace cv;
 
-VideoHandler::VideoHandler(Configuration* c) {
+VideoHandler::VideoHandler(Configuration* c, EdgesDetectorCreator* e, SmoothingCreator* s) {
     configuration = c;
     EdgesDetector::DetectorType t = configuration->getEdgesDetectorType();
-    detector = nullptr;
-    if (t == EdgesDetector::DetectorType::laplacian) {
-        detector = new ::Laplacian();
-    }
-    else if (t == EdgesDetector::DetectorType::dft) {
-        detector = new DFTFilter();
-    }
+    detector = e->create();
+    smoothing = s->create();
 
     string pathToVideo = configuration->getPathToVideo();
     newFrameCap.open(pathToVideo);
@@ -46,9 +43,8 @@ VideoHandler::VideoHandler(Configuration* c) {
 void VideoHandler::processVideo() {
     Mat frame;
     Size outputSize = getOutputSize();
-    Mat mean32F(outputSize, CV_32F, Scalar::all(0));
     Mat mask(outputSize, CV_8U, Scalar::all(0));
-    Mat meanCV8U;
+    Mat smoothedCV8U;
     Mat filteredImage;
     int frameCounter = 0;
     Timer t1;
@@ -67,14 +63,33 @@ void VideoHandler::processVideo() {
         Timer t;
         t.saveTimePoint();
 
-        // resize image by compressionFactor times vertically and horizontally  
+        // change image size 
         resize(frame, frame, outputSize);
         
         // calculate mean frame as CV_8U and CV_32F Mat types
-        calculateMean(mean32F, meanCV8U, frame, frameCounter);
+        //calculateMean(mean32F, meanCV8U, frame, frameCounter);
+        smoothing->work(frame, smoothedCV8U, frameCounter, configuration->getFramesLimit());
+
+        //Mat gray;
+        //cv::cvtColor(frame, gray, COLOR_BGR2GRAY);
+
+        //double alpha = 0.015;
+        //gray.convertTo(gray, CV_32F, 1.0 / 255.0);
+        //if (frameCounter == 1) {
+        //    acc32F = gray;
+        //}
+        //else {
+        //    acc32F = alpha * gray + (1 - alpha) * acc32F;
+        //}
+
+        //Mat outImg;
+        //normalize(acc32F, outImg, 0, 1, NORM_MINMAX);
+        //outImg.convertTo(outImg, CV_8U, 255.0);
+        //imshow("outImg", outImg);
+        //waitKey(0);
         
         // apply laplacian or DFT high pass filter
-        detector->detect(meanCV8U, filteredImage);
+        detector->detect(smoothedCV8U, filteredImage);
 
         // find clusters
         Mat i = filteredImage;
@@ -151,7 +166,7 @@ void VideoHandler::processVideo() {
         //tr << in2 << "\n";
 
         if (configuration->hasMeanStandardDeviationMedianRecording()) {
-            calculateMeanStandardDeviationMedian(meanCV8U, filteredImage);
+            calculateMeanStandardDeviationMedian(smoothedCV8U, filteredImage);
         }
 
         if (configuration->hasVideoRecording()) {
@@ -159,11 +174,11 @@ void VideoHandler::processVideo() {
         }
 
         if (configuration->hasSaveResultsFlag()) {
-            saveResults(frame, meanCV8U, filteredImage, frameCounter);
+            saveResults(frame, smoothedCV8U, filteredImage, frameCounter);
         }
 
         if (configuration->hasShowResultsFlag()) {
-            showResults(frame, meanCV8U, filteredImage);
+            showResults(frame, smoothedCV8U, filteredImage);
         }
         t.reset();
         t1.reset();
@@ -175,21 +190,22 @@ void VideoHandler::processVideo() {
 VideoHandler::~VideoHandler() {
     newFrameCap.release();
     delete this->detector;
+    delete this->smoothing;
 }
 
 void VideoHandler::initializeVideoWriter() {
-    const int compressionFactor = configuration->getCompressionFactor();
-    Size outputSize((int)newFrameCap.get(CAP_PROP_FRAME_WIDTH) / compressionFactor, (int)newFrameCap.get(CAP_PROP_FRAME_HEIGHT) / compressionFactor);
+    const int sizeFactor = configuration->getSizeFactor();
+    Size outputSize = getOutputSize();
     //int ex = (int)(cap.get(CAP_PROP_FOURCC));
     int fps = (int)(newFrameCap.get(CAP_PROP_FPS));
-    string videoName = "E:\\Downloads\\dumps\\xxxxx_" + to_string(compressionFactor) + ".avi";
+    string videoName = "E:\\Downloads\\dumps\\xxxxx_" + to_string(sizeFactor) + ".avi";
     int codec = VideoWriter::fourcc('M', 'J', 'P', 'G');
     v.open(videoName, codec, fps, outputSize, false);
 }
 
 cv::Size VideoHandler::getOutputSize() {
-    const int compressionFactor = configuration->getCompressionFactor();
-    Size outputSize((int)newFrameCap.get(CAP_PROP_FRAME_WIDTH) / compressionFactor, (int)newFrameCap.get(CAP_PROP_FRAME_HEIGHT) / compressionFactor);
+    const int sizeFactor = configuration->getSizeFactor();
+    Size outputSize(160 * sizeFactor, 90 * sizeFactor);
     return outputSize;
 }
 
@@ -217,7 +233,7 @@ void VideoHandler::draw_components(Mat& src, Mat& dst, Mat& labelImage, std::vec
     }
 }
 
-void VideoHandler::calculateMeanStandardDeviationMedian(const cv::Mat& mean, const cv::Mat& outputImage) {
+void VideoHandler::calculateMeanStandardDeviationMedian(const cv::Mat& smoothed, const cv::Mat& outputImage) {
     //ofstream f1("med_mean.txt", ios::app);
     //ofstream f3("med_filter.txt", ios::app);
     ofstream f2("disp_mean.txt", ios::app);
@@ -225,12 +241,12 @@ void VideoHandler::calculateMeanStandardDeviationMedian(const cv::Mat& mean, con
     ofstream f5("mean_filter.txt", ios::app);
     Mat m, disp;
     
-    meanStdDev(mean, m, disp);
+    meanStdDev(smoothed, m, disp);
     // for variance instead of standard deviation use:
     //disp *= disp;
     int med = -1;
     std::vector<int> array;
-    array.assign(mean.begin<uchar>(), mean.end<uchar>());
+    array.assign(smoothed.begin<uchar>(), smoothed.end<uchar>());
     std::nth_element(array.begin(), array.begin() + array.size() / 2, array.end());
     med = array[array.size() / 2];
     array.clear();
@@ -256,19 +272,19 @@ void VideoHandler::calculateMeanStandardDeviationMedian(const cv::Mat& mean, con
     f5.close();
 }
 
-void VideoHandler::showResults(const cv::Mat& inputFrame, const cv::Mat& mean, const cv::Mat& filteredImage) {
-    imshow("Mean frame", mean);
+void VideoHandler::showResults(const cv::Mat& inputFrame, const cv::Mat& smoothed, const cv::Mat& filteredImage) {
+    imshow("Smoothed frame", smoothed);
     imshow("Filtered mean frame", filteredImage);
     imshow("New frame", inputFrame);
     waitKey(1);
 }
 
-void VideoHandler::saveResults(const cv::Mat& inputFrame, const cv::Mat& mean, const cv::Mat& outputImage, int frameCounter) {
-    string path = "E:\\Downloads\\dumps\\lapl2_" + to_string(configuration->getCompressionFactor()) + "\\";
+void VideoHandler::saveResults(const cv::Mat& inputFrame, const cv::Mat& smoothed, const cv::Mat& outputImage, int frameCounter) {
+    string path = "E:\\Downloads\\dumps\\lapl2_" + to_string(configuration->getSizeFactor()) + "\\";
     // write input frame to file
     imwrite(path + "s\\" + "s" + to_string(frameCounter) + ".jpg", inputFrame);
     // write mean to file
-    imwrite(path + "m\\" + "m" + to_string(frameCounter) + ".jpg", mean);
+    imwrite(path + "m\\" + "m" + to_string(frameCounter) + ".jpg", smoothed);
     // write result to file
     imwrite(path + "r\\" + "r" + to_string(frameCounter) + ".jpg", outputImage);
 }

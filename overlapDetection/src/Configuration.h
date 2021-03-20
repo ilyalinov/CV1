@@ -2,6 +2,7 @@
 #include <string>
 
 #include "EdgesDetector.h"
+#include "Smoothing.h"
 
 class Configuration {
 	public:
@@ -15,13 +16,15 @@ class Configuration {
 
 		bool hasShowResultsFlag();
 
-		int getCompressionFactor();
+		int getSizeFactor();
 
 		int getFramesLimit();
 
 		std::string getPathToVideo();
 
 		EdgesDetector::DetectorType getEdgesDetectorType();
+
+		Smoothing::SmoothingType getSmoothingType();
 
 		void print();
 	private:
@@ -30,10 +33,11 @@ class Configuration {
 			cMeanStandardDeviationRecording,
 			cSaveResults,
 			cShowResults,
-			cCompressionFactor,
+			cSizeFactor,
 			cFramesLimit,
 			cPathToVideo,
 			detector,
+			smoothing,
 			other
 		};
 
@@ -45,8 +49,9 @@ class Configuration {
 		bool meanStandardDeviationMedianRecording = false;
 		bool saveResultsFlag = false;
 		bool showResultsFlag = true;
-		int compressionFactor = 2;
+		int sizeFactor = 2;
 		int framesLimit = 200;
 		std::string pathToVideo;
 		EdgesDetector::DetectorType detectorType = EdgesDetector::DetectorType::laplacian;
+		Smoothing::SmoothingType smoothingType = Smoothing::SmoothingType::mean;
 };
