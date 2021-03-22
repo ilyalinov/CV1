@@ -30,6 +30,8 @@ class VideoHandler {
 
 		void draw_components(cv::Mat& src, cv::Mat& dst, cv::Mat& labelImage, std::vector<cv::Vec3b>& colors);
 
+		cv::Point2f getPoint(int row, int col, const cv::Mat& labelImage, int label, int ksize);
+
 		Configuration* configuration;
 		EdgesDetector* detector;
 		Smoothing* smoothing;
