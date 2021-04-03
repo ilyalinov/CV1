@@ -8,7 +8,7 @@ set(NAME_SRC
 	src/Clustering.cpp
 	src/Configuration.cpp
 	src/DFTFilter.cpp
-	src/ExcpFilter.cpp
+	src/ExpFilter.cpp
 	src/Laplacian.cpp
 	src/Mean.cpp
 	src/OpticalFlow.cpp
