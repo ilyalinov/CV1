@@ -6,11 +6,9 @@
 
 using namespace cv;
 
-void ExpFilter::work(cv::Mat& inputFrame, cv::Mat& outputImage, int framesCounter, int framesLimit)
-{
+void ExpFilter::work(cv::Mat& inputFrame, cv::Mat& outputImage, int framesCounter, int framesLimit) {
     Mat gray;
-    cv::cvtColor(inputFrame, gray, COLOR_BGR2GRAY);
-    gray.convertTo(gray, CV_32F, 1.0 / 255.0);
+    inputFrame.convertTo(gray, CV_32F, 1.0 / 255.0);
     if (framesCounter == 1) {
         acc32F = gray;
     }

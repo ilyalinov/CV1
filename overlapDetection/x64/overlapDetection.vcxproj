@@ -19,16 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Clustering.cpp" />
     <ClCompile Include="..\src\Configuration.cpp" />
     <ClCompile Include="..\src\DFTFilter.cpp" />
     <ClCompile Include="..\src\ExpFilter.cpp" />
     <ClCompile Include="..\src\Laplacian.cpp" />
     <ClCompile Include="..\src\Mean.cpp" />
+    <ClCompile Include="..\src\OpticalFlow.cpp" />
     <ClCompile Include="..\src\Source.cpp" />
     <ClCompile Include="..\src\Timer.cpp" />
     <ClCompile Include="..\src\VideoHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\Clustering.h" />
     <ClInclude Include="..\src\Configuration.h" />
     <ClInclude Include="..\src\DFTFilter.h" />
     <ClInclude Include="..\src\EdgesDetector.h" />
@@ -36,6 +39,7 @@
     <ClInclude Include="..\src\ExpFilter.h" />
     <ClInclude Include="..\src\Laplacian.h" />
     <ClInclude Include="..\src\Mean.h" />
+    <ClInclude Include="..\src\OpticalFlow.h" />
     <ClInclude Include="..\src\Smoothing.h" />
     <ClInclude Include="..\src\SmoothingCreator.h" />
     <ClInclude Include="..\src\Timer.h" />

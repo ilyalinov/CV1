@@ -8,4 +8,3 @@ public:
 private:
 	cv::Mat mean32F;
 };
-

@@ -6,10 +6,11 @@
 #include "SmoothingCreator.h"
 #include "EdgesDetector.h"
 #include "Smoothing.h"
+#include "OpticalFlow.h"
 
 class VideoHandler {
 	public:
-		VideoHandler(Configuration* c, EdgesDetectorCreator* e, SmoothingCreator* s);
+		VideoHandler(Configuration* c);
 
 		void processVideo();
 
@@ -26,7 +27,11 @@ class VideoHandler {
 		
 		void saveResults(const cv::Mat& inputFrame, const cv::Mat& mean, const cv::Mat& outputImage, int frameCounter);
 		
-		void showResults(const cv::Mat& inputFrame, const cv::Mat& mean, const cv::Mat& outputImage);
+		void showResults(const cv::Mat& inputFrame
+						, const cv::Mat& mean
+						, const cv::Mat& outputImage
+						, const cv::Mat& clusters
+						, const cv::Mat& overlap);
 
 		void draw_components(cv::Mat& src, cv::Mat& dst, cv::Mat& labelImage, std::vector<cv::Vec3b>& colors);
 
@@ -35,6 +40,7 @@ class VideoHandler {
 		Configuration* configuration;
 		EdgesDetector* detector;
 		Smoothing* smoothing;
+		OpticalFlow* optFlow;
 		cv::VideoWriter v;
 		cv::VideoCapture newFrameCap;
 };

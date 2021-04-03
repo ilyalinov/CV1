@@ -9,7 +9,8 @@ void Timer::saveTimePoint() {
 void Timer::printLastDuration() {
 	if (v.size() > 1) {
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(v[v.size() - 1] - v[v.size() - 2]).count();
-		std::cout << "time between 2 most recent time points in microseconds: " << duration << "\n";
+		//std::cout << "time between 2 most recent time points in microseconds: " << duration << "\n";
+		std::cout << duration << "\n";
 	}
 }
 

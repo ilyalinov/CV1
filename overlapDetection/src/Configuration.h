@@ -8,6 +8,8 @@ class Configuration {
 	public:
 		Configuration(const std::string& filename);
 
+		~Configuration();
+
 		bool hasVideoRecording();
 
 		bool hasMeanStandardDeviationMedianRecording();
@@ -24,7 +26,11 @@ class Configuration {
 
 		EdgesDetector::DetectorType getEdgesDetectorType();
 
+		EdgesDetector* getDetector();
+
 		Smoothing::SmoothingType getSmoothingType();
+
+		Smoothing* getSmoothing();
 
 		void print();
 	private:
@@ -53,5 +59,7 @@ class Configuration {
 		int framesLimit = 200;
 		std::string pathToVideo;
 		EdgesDetector::DetectorType detectorType = EdgesDetector::DetectorType::laplacian;
+		EdgesDetector* d = nullptr;
 		Smoothing::SmoothingType smoothingType = Smoothing::SmoothingType::mean;
+		Smoothing* s = nullptr;
 };

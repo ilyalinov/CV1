@@ -1,4 +1,9 @@
 #include "Configuration.h"
+#include "Mean.h"
+#include "ExpFilter.h"
+#include "Laplacian.h"
+#include "DFTFilter.h"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -38,8 +43,23 @@ Configuration::Configuration(const string& filename) {
 		sizeFactor = 2;
 		int framesLimit = 200;
 		detectorType = EdgesDetector::DetectorType::laplacian;
+		d = new Laplacian();
 		smoothingType = Smoothing::SmoothingType::mean;
+		s = new Mean();
 	}
+
+	if (d == nullptr) {
+		d = new Laplacian();
+	}
+
+	if (s == nullptr) {
+		s = new Mean();
+	}
+}
+
+Configuration::~Configuration() {
+	delete d;
+	delete s;
 }
 
 bool Configuration::hasVideoRecording() {
@@ -62,8 +82,7 @@ int Configuration::getSizeFactor() {
 	return sizeFactor;
 }
 
-int Configuration::getFramesLimit()
-{
+int Configuration::getFramesLimit() {
 	return framesLimit;
 }
 
@@ -75,8 +94,16 @@ EdgesDetector::DetectorType Configuration::getEdgesDetectorType() {
 	return detectorType;
 }
 
+EdgesDetector* Configuration::getDetector() {
+	return d;
+}
+
 Smoothing::SmoothingType Configuration::getSmoothingType() {
 	return Smoothing::SmoothingType();
+}
+
+Smoothing* Configuration::getSmoothing() {
+	return s;
 }
 
 void Configuration::print() {
@@ -156,7 +183,7 @@ bool Configuration::storeValue(string& key, string& value) {
 		case StringCode::cFramesLimit:
 			try {
 				int n = stoi(value);
-				if (n > 1000 || n <= 1) {
+				if (n > 1000 || n <= 10) {
 					isError = true;
 				}
 				else {
@@ -174,9 +201,11 @@ bool Configuration::storeValue(string& key, string& value) {
 		case StringCode::detector:
 			if (value == "laplacian") {
 				detectorType = EdgesDetector::DetectorType::laplacian;
+				d = new Laplacian();
 			}
 			else if (value == "dft") {
 				detectorType = EdgesDetector::DetectorType::dft;
+				d = new DFTFilter();
 			}
 			else {
 				isError = true;
@@ -185,9 +214,11 @@ bool Configuration::storeValue(string& key, string& value) {
 		case StringCode::smoothing:
 			if (value == "mean") {
 				smoothingType = Smoothing::SmoothingType::mean;
+				s = new Mean();
 			}
 			else if (value == "exp") {
 				smoothingType = Smoothing::SmoothingType::exp;
+				s = new ExpFilter();
 			}
 			else {
 				isError = true;
