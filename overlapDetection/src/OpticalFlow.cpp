@@ -78,7 +78,7 @@ void OpticalFlow::track(const Mat& prevGray, const Mat& gray) {
 
             long long numberOfGoodPoints = std::count(statusMap[labels[j]].begin(), statusMap[labels[j]].end(), 1);
             bool goodComponent = std::find(goodLabels.begin(), goodLabels.end(), label) != goodLabels.end();
-            if (goodComponent && numberOfGoodPoints >= statusMap[labels[j]].size() / 3) {
+            if (goodComponent && (unsigned)numberOfGoodPoints >= statusMap[labels[j]].size() / 3) {
                 findComponentShift(label);
             }
             else {
