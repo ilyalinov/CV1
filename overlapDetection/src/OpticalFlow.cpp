@@ -5,6 +5,8 @@
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/highgui.hpp>
 
+#include "Clustering.h"
+
 using namespace cv;
 using namespace std;
 
@@ -14,11 +16,24 @@ void OpticalFlow::setCurrentFrame(const cv::Mat& frame) {
 
 void OpticalFlow::initialize(const Mat& labelImage, const Mat& stats, int nLabels, bool isNewLabelImage) {
     if (isNewLabelImage) {
+        iteration++;
         goodLabels.clear();
+
+        for (int i = 0; i < files.size(); i++) {
+            files[i].close();
+        }
+        files.clear();
+        
         for (int label = 1; label < nLabels; label++) {
             goodLabels.push_back(label);
         }
+
+        componentShiftdx.clear();
+        componentShiftdy.clear();
     }
+
+    colors.resize(nLabels);
+    createColors(colors, nLabels);
 
     Mat src = (labelImage != 0);
     Mat pointsImage(labelImage.size(), CV_8U, Scalar::all(0));
@@ -50,6 +65,16 @@ void OpticalFlow::initialize(const Mat& labelImage, const Mat& stats, int nLabel
             }
         }
 
+        //if (isNewLabelImage) {
+        //    string filename("i" + to_string(iteration) + "_" 
+        //        + "c" + to_string(label) + "_"
+        //        + "p" + to_string(statusMap[label].size())
+        //        + ".txt"
+        //    );
+
+        //    files.emplace_back(filename);
+        //}
+        
         //cout << "comp = " << label << "; " << " number of points = " << pointsMap[label].size() << "\n";
     }
 
@@ -78,7 +103,7 @@ void OpticalFlow::track(const Mat& prevGray, const Mat& gray) {
 
             long long numberOfGoodPoints = std::count(statusMap[labels[j]].begin(), statusMap[labels[j]].end(), 1);
             bool goodComponent = std::find(goodLabels.begin(), goodLabels.end(), label) != goodLabels.end();
-            if (goodComponent && (unsigned)numberOfGoodPoints >= statusMap[labels[j]].size() / 3) {
+            if (goodComponent && numberOfGoodPoints > 0) {
                 findComponentShift(label);
             }
             else {
@@ -93,14 +118,14 @@ void OpticalFlow::track(const Mat& prevGray, const Mat& gray) {
             continue;
         }
 
-        dy.push_back(abs((int)round(points[1][j].y - points[0][j].y)));
-        dx.push_back(abs((int)round(points[1][j].x - points[0][j].x)));
+        dy.push_back(((int)round((points[1][j].y - points[0][j].y) * 10)));
+        dx.push_back(((int)round((points[1][j].x - points[0][j].x) * 10)));
 
         points[1][k] = points[1][j];
         labels[k] = labels[j];
         positions[k] = positions[j];
         k++;
-        circle(image, points[1][j], 2, Scalar(0, 255, 0), -1, 8);
+        circle(image, points[1][j], 2, colors[labels[j]], -1, 8);
     }
 
     points[1].resize(k);
@@ -115,8 +140,8 @@ void OpticalFlow::reset() {
     positions.clear();
     labels.clear();
     points[0].clear();
-    componentShiftdx.clear();
-    componentShiftdy.clear();
+    //componentShiftdx.clear();
+    //componentShiftdy.clear();
     int pointsCounter = 0;
 }
 
@@ -164,15 +189,20 @@ void OpticalFlow::findComponentShift(int label) {
         }
     }
 
-    const int eps = 2;
-    componentShiftdy[label] += (mostCommondy);
-    componentShiftdx[label] += (mostCommondx);
-    if (abs(componentShiftdx[label]) > eps || abs(componentShiftdy[label]) > eps) {
+    const float eps = 3.0;
+    componentShiftdy[label] += (mostCommondy) / 10.0;
+    componentShiftdx[label] += (mostCommondx) / 10.0;
+    if (abs(componentShiftdy[label]) > eps || abs(componentShiftdx[label]) > eps + 3) {
         goodLabels.erase(std::remove(goodLabels.begin(), goodLabels.end(), label), goodLabels.end());
     }
 
-    //cout << "comp number: " << label << "; full shift dy: " << componentShiftdy[label] << "\n";
-    //cout << "comp number: " << label << "; full shift dx: " << componentShiftdx[label] << "\n";
+    //cout << "comp number: " << label << "; shift dy: " << mostCommondy << "\n";
+    //cout << "comp number: " << label << "; shift dx: " << mostCommondx << "\n";
+
+    cout << "comp number: " << label << "; full shift dy: " << componentShiftdy[label] << "\n";
+    cout << "comp number: " << label << "; full shift dx: " << componentShiftdx[label] << "\n";
+
+    //files[label - 1] << componentShiftdy[label] << "\n";
 
     dx.clear();
     dy.clear();

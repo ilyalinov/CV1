@@ -86,15 +86,15 @@ void VideoHandler::processVideo() {
             createColors(colors, nLabels);
             clusters = Mat(outputSize, CV_8UC3, Scalar::all(0));
             drawComponents(clusters, labelImage, colors);
-            //imwrite("c" + to_string(frameCounter) + ".png", clusters);
+            imwrite("c" + to_string(frameCounter) + ".png", clusters);
         }
         
         // OPTICAL FLOW
         if (frameCounter > configuration->getFramesLimit()) {
             optFlow->setCurrentFrame(frame);
             optFlow->track(prevGray, gray);
-            //optFlow->printNumberOfSuccessfulPoints();
-            //optFlow->showTrackedPoints();
+            optFlow->printNumberOfSuccessfulPoints();
+            optFlow->showTrackedPoints();
         }
 
         if (frameCounter == configuration->getFramesLimit()) {
@@ -110,12 +110,12 @@ void VideoHandler::processVideo() {
             }
             
             threshold(overlap, overlap, 0, 255, THRESH_BINARY);
-            //imwrite("o" + to_string(frameCounter) + ".png", overlap);
+            imwrite("o" + to_string(frameCounter) + ".png", overlap);
 
             optFlow->reset();
             optFlow->initialize(labelImage, stats, nLabels, true);
         }
-        else if (frameCounter > configuration->getFramesLimit() && frameCounter % configuration->getFramesLimit() != 0 && frameCounter % 10 == 0) {
+        else if (frameCounter > configuration->getFramesLimit() && frameCounter % configuration->getFramesLimit() != 0 && frameCounter % 40 == 0) {
             optFlow->reset();
             optFlow->initialize(labelImage, stats, nLabels, false);
         }
