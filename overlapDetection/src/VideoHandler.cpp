@@ -32,7 +32,7 @@ VideoHandler::VideoHandler(Configuration* c) {
         return;
     }
 
-    if (configuration->hasVideoRecording()) {
+    if (!configuration->hasVideoRecording()) {
         initializeVideoWriter();
     }
 }
@@ -52,6 +52,7 @@ void VideoHandler::processVideo() {
     Mat gray, prevGray, prevLabelImage;
     Mat stats, centroids, labelImage;
     int nLabels = 0;
+    Mat result;
 
     while (true) {
         frameCounter++;
@@ -110,7 +111,7 @@ void VideoHandler::processVideo() {
             }
             
             threshold(overlap, overlap, 0, 255, THRESH_BINARY);
-            imwrite("o" + to_string(frameCounter) + ".png", overlap);
+            //imwrite("o" + to_string(frameCounter) + ".png", overlap);
 
             optFlow->reset();
             optFlow->initialize(labelImage, stats, nLabels, true);
@@ -118,6 +119,12 @@ void VideoHandler::processVideo() {
         else if (frameCounter > configuration->getFramesLimit() && frameCounter % configuration->getFramesLimit() != 0 && frameCounter % 40 == 0) {
             optFlow->reset();
             optFlow->initialize(labelImage, stats, nLabels, false);
+        }
+
+        if (!overlap.empty()) {
+            result = frame.clone();
+            result.setTo(Scalar(0, 255, 0), overlap);
+            imshow("video", result);
         }
 
         cv::swap(prevGray, gray);
@@ -140,8 +147,16 @@ void VideoHandler::processVideo() {
             calculateMeanStandardDeviationMedian(smoothedCV8U, filteredImage);
         }
 
-        if (configuration->hasVideoRecording()) {
-            v << filteredImage;
+        if (!configuration->hasVideoRecording()) {
+            //v << frame;
+            
+            if (result.empty()) {
+                v << frame;
+            }
+            else {
+                v << result;
+            }
+            //v << filteredImage;
         }
 
         if (configuration->hasSaveResultsFlag()) {
@@ -155,6 +170,7 @@ void VideoHandler::processVideo() {
         t1.reset();
     }
 
+    v.release();
     destroyAllWindows();
 }
 
@@ -168,9 +184,9 @@ void VideoHandler::initializeVideoWriter() {
     Size outputSize = getOutputSize();
     //int ex = (int)(cap.get(CAP_PROP_FOURCC));
     int fps = (int)(newFrameCap.get(CAP_PROP_FPS));
-    string videoName = "E:\\Downloads\\dumps\\xxxxx_" + to_string(sizeFactor) + ".avi";
+    string videoName = "E:\\Downloads\\dumps\\wowthatscool" + to_string(sizeFactor) + ".avi";
     int codec = VideoWriter::fourcc('M', 'J', 'P', 'G');
-    v.open(videoName, codec, fps, outputSize, false);
+    v.open(videoName, codec, fps, outputSize, true);
 }
 
 cv::Size VideoHandler::getOutputSize() {
