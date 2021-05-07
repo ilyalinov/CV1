@@ -31,7 +31,8 @@ class VideoHandler {
 						, const cv::Mat& mean
 						, const cv::Mat& outputImage
 						, const cv::Mat& clusters
-						, const cv::Mat& overlap);
+						, const cv::Mat& overlap
+						, const cv::Mat& result);
 
 		void draw_components(cv::Mat& src, cv::Mat& dst, cv::Mat& labelImage, std::vector<cv::Vec3b>& colors);
 

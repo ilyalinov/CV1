@@ -52,6 +52,7 @@ void VideoHandler::processVideo() {
     Mat gray, prevGray, prevLabelImage;
     Mat stats, centroids, labelImage;
     int nLabels = 0;
+    Mat result;
 
     while (true) {
         frameCounter++;
@@ -65,7 +66,7 @@ void VideoHandler::processVideo() {
         }
         
         Timer t1;
-        t1.saveTimePoint();
+        //t1.saveTimePoint();
  
         resize(frame, frame, outputSize);        
         cv::cvtColor(frame, gray, COLOR_BGR2GRAY);
@@ -135,6 +136,11 @@ void VideoHandler::processVideo() {
             optFlow->initialize(labelImage, stats, nLabels, false);
         }
 
+        if (!overlap.empty()) {
+            result = frame.clone();
+            result.setTo(Scalar(0, 255, 0), overlap);
+        }
+
         cv::swap(prevGray, gray);
         labelImage.copyTo(prevLabelImage);
 
@@ -159,7 +165,15 @@ void VideoHandler::processVideo() {
         }
 
         if (configuration->hasVideoRecording()) {
-            v << filteredImage;
+            //v << frame;
+            
+            if (result.empty()) {
+                v << frame;
+            }
+            else {
+                v << result;
+            }
+            //v << filteredImage;
         }
 
         if (configuration->hasSaveResultsFlag()) {
@@ -167,12 +181,13 @@ void VideoHandler::processVideo() {
         }
 
         if (configuration->hasShowResultsFlag()) {
-            showResults(frame, smoothedCV8U, filteredImage, clusters, overlap);
+            showResults(frame, smoothedCV8U, filteredImage, clusters, overlap, result);
         }
 
         t1.reset();
     }
 
+    v.release();
     destroyAllWindows();
 }
 
@@ -186,9 +201,9 @@ void VideoHandler::initializeVideoWriter() {
     Size outputSize = getOutputSize();
     //int ex = (int)(cap.get(CAP_PROP_FOURCC));
     int fps = (int)(newFrameCap.get(CAP_PROP_FPS));
-    string videoName = "E:\\Downloads\\dumps\\xxxxx_" + to_string(sizeFactor) + ".avi";
+    string videoName = "result.avi";
     int codec = VideoWriter::fourcc('M', 'J', 'P', 'G');
-    v.open(videoName, codec, fps, outputSize, false);
+    v.open(videoName, codec, fps, outputSize, true);
 }
 
 cv::Size VideoHandler::getOutputSize() {
@@ -264,7 +279,8 @@ void VideoHandler::showResults(const cv::Mat& inputFrame
                                 , const cv::Mat& smoothed
                                 , const cv::Mat& filteredImage
                                 , const cv::Mat& clusters
-                                , const cv::Mat& overlap) {
+                                , const cv::Mat& overlap
+                                , const cv::Mat& result) {
     if (!smoothed.empty()) {
         imshow("Smoothed frame", smoothed);
     }
@@ -280,7 +296,10 @@ void VideoHandler::showResults(const cv::Mat& inputFrame
     if (!overlap.empty()) {
         imshow("Overlap", overlap);
     }
-    cv::waitKey(1);
+    if (!result.empty()) {
+        imshow("Result", result);
+    }
+    cv::waitKey(15);
 }
 
 void VideoHandler::saveResults(const cv::Mat& inputFrame, const cv::Mat& smoothed, const cv::Mat& outputImage, int frameCounter) {

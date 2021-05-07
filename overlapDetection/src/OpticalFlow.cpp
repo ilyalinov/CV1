@@ -153,7 +153,7 @@ void OpticalFlow::printNumberOfSuccessfulPoints() {
     // log how many points are successfully tracked for each component
     for (int j = 1; j < nLabels; j++) {
         long long result = std::count(statusMap[j].begin(), statusMap[j].end(), 1);
-        cout << "comp number = " << j << "; successful points number = " << result << "\n";
+        //cout << "comp number = " << j << "; successful points number = " << result << "\n";
     }
 }
 
@@ -161,7 +161,7 @@ void OpticalFlow::showTrackedPoints() {
     // draw successfully tracked points
     imshow("points", image);
     //imwrite("E:\\Downloads\\dumps\\points\\" + to_string(frameCounter) + ".jpg", image);
-    cv::waitKey(0);
+    cv::waitKey(1);
 }
 
 void OpticalFlow::findComponentShift(int label) {
@@ -190,8 +190,8 @@ void OpticalFlow::findComponentShift(int label) {
     }
 
     const float eps = 3.0;
-    componentShiftdy[label] += (mostCommondy) / 10.0;
-    componentShiftdx[label] += (mostCommondx) / 10.0;
+    componentShiftdy[label] += (mostCommondy) / 10.0f;
+    componentShiftdx[label] += (mostCommondx) / 10.0f;
     if (abs(componentShiftdy[label]) > eps || abs(componentShiftdx[label]) > eps + 3) {
         goodLabels.erase(std::remove(goodLabels.begin(), goodLabels.end(), label), goodLabels.end());
     }
