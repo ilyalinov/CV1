@@ -55,7 +55,7 @@ void VideoHandler::processVideo() {
 
     while (true) {
         frameCounter++;
-        cout << "frameCounter = " << frameCounter << "\n";
+        //cout << "frameCounter = " << frameCounter << "\n";
         
         // read input frame
         newFrameCap >> frame;
@@ -71,14 +71,27 @@ void VideoHandler::processVideo() {
         cv::cvtColor(frame, gray, COLOR_BGR2GRAY);
 
         // calculate smoothed image 
+        //t1.saveTimePoint();
         smoothing->work(gray, smoothedCV8U, frameCounter, configuration->getFramesLimit());
+        //t1.saveTimePoint();
+        //t1.printLastDuration();
 
         if (frameCounter % configuration->getFramesLimit() == 0) {
             // apply laplacian or DFT high pass filter
+            //t1.saveTimePoint();
+            //t1.printLastDuration();
             detector->detect(smoothedCV8U, filteredImage);
+            //t1.saveTimePoint();
+            //t1.printLastDuration();
 
             // find clusters
+            //t1.saveTimePoint();
+            //t1.printLastDuration();
+
             nLabels = findClusters(filteredImage, labelImage, centroids, stats);
+            //t1.saveTimePoint();
+            //t1.printLastDuration();
+
             masks.push_back(labelImage.clone());
 
             // draw colored connected components image
@@ -86,15 +99,17 @@ void VideoHandler::processVideo() {
             createColors(colors, nLabels);
             clusters = Mat(outputSize, CV_8UC3, Scalar::all(0));
             drawComponents(clusters, labelImage, colors);
-            imwrite("c" + to_string(frameCounter) + ".png", clusters);
+            //imwrite("c" + to_string(frameCounter) + ".png", clusters);
         }
         
         // OPTICAL FLOW
+        //t1.saveTimePoint();
+        //t1.printLastDuration();
         if (frameCounter > configuration->getFramesLimit()) {
             optFlow->setCurrentFrame(frame);
             optFlow->track(prevGray, gray);
-            optFlow->printNumberOfSuccessfulPoints();
-            optFlow->showTrackedPoints();
+            //optFlow->printNumberOfSuccessfulPoints();
+            //optFlow->showTrackedPoints();
         }
 
         if (frameCounter == configuration->getFramesLimit()) {
@@ -110,7 +125,7 @@ void VideoHandler::processVideo() {
             }
             
             threshold(overlap, overlap, 0, 255, THRESH_BINARY);
-            imwrite("o" + to_string(frameCounter) + ".png", overlap);
+            //imwrite("o" + to_string(frameCounter) + ".png", overlap);
 
             optFlow->reset();
             optFlow->initialize(labelImage, stats, nLabels, true);
@@ -122,6 +137,9 @@ void VideoHandler::processVideo() {
 
         cv::swap(prevGray, gray);
         labelImage.copyTo(prevLabelImage);
+
+        t1.saveTimePoint();
+        t1.printLastDuration();
 
         // points intensity chart
         

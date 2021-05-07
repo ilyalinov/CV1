@@ -199,8 +199,8 @@ void OpticalFlow::findComponentShift(int label) {
     //cout << "comp number: " << label << "; shift dy: " << mostCommondy << "\n";
     //cout << "comp number: " << label << "; shift dx: " << mostCommondx << "\n";
 
-    cout << "comp number: " << label << "; full shift dy: " << componentShiftdy[label] << "\n";
-    cout << "comp number: " << label << "; full shift dx: " << componentShiftdx[label] << "\n";
+    //cout << "comp number: " << label << "; full shift dy: " << componentShiftdy[label] << "\n";
+    //cout << "comp number: " << label << "; full shift dx: " << componentShiftdx[label] << "\n";
 
     //files[label - 1] << componentShiftdy[label] << "\n";
 
