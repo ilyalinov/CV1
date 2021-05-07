@@ -32,7 +32,7 @@ VideoHandler::VideoHandler(Configuration* c) {
         return;
     }
 
-    if (!configuration->hasVideoRecording()) {
+    if (configuration->hasVideoRecording()) {
         initializeVideoWriter();
     }
 }
@@ -56,7 +56,7 @@ void VideoHandler::processVideo() {
 
     while (true) {
         frameCounter++;
-        cout << "frameCounter = " << frameCounter << "\n";
+        //cout << "frameCounter = " << frameCounter << "\n";
         
         // read input frame
         newFrameCap >> frame;
@@ -66,7 +66,7 @@ void VideoHandler::processVideo() {
         }
         
         Timer t1;
-        t1.saveTimePoint();
+        //t1.saveTimePoint();
  
         resize(frame, frame, outputSize);        
         cv::cvtColor(frame, gray, COLOR_BGR2GRAY);
@@ -87,15 +87,15 @@ void VideoHandler::processVideo() {
             createColors(colors, nLabels);
             clusters = Mat(outputSize, CV_8UC3, Scalar::all(0));
             drawComponents(clusters, labelImage, colors);
-            imwrite("c" + to_string(frameCounter) + ".png", clusters);
+            //imwrite("c" + to_string(frameCounter) + ".png", clusters);
         }
         
         // OPTICAL FLOW
         if (frameCounter > configuration->getFramesLimit()) {
             optFlow->setCurrentFrame(frame);
             optFlow->track(prevGray, gray);
-            optFlow->printNumberOfSuccessfulPoints();
-            optFlow->showTrackedPoints();
+            //optFlow->printNumberOfSuccessfulPoints();
+            //optFlow->showTrackedPoints();
         }
 
         if (frameCounter == configuration->getFramesLimit()) {
@@ -124,7 +124,6 @@ void VideoHandler::processVideo() {
         if (!overlap.empty()) {
             result = frame.clone();
             result.setTo(Scalar(0, 255, 0), overlap);
-            imshow("video", result);
         }
 
         cv::swap(prevGray, gray);
@@ -147,7 +146,7 @@ void VideoHandler::processVideo() {
             calculateMeanStandardDeviationMedian(smoothedCV8U, filteredImage);
         }
 
-        if (!configuration->hasVideoRecording()) {
+        if (configuration->hasVideoRecording()) {
             //v << frame;
             
             if (result.empty()) {
@@ -164,7 +163,7 @@ void VideoHandler::processVideo() {
         }
 
         if (configuration->hasShowResultsFlag()) {
-            showResults(frame, smoothedCV8U, filteredImage, clusters, overlap);
+            showResults(frame, smoothedCV8U, filteredImage, clusters, overlap, result);
         }
 
         t1.reset();
@@ -184,7 +183,7 @@ void VideoHandler::initializeVideoWriter() {
     Size outputSize = getOutputSize();
     //int ex = (int)(cap.get(CAP_PROP_FOURCC));
     int fps = (int)(newFrameCap.get(CAP_PROP_FPS));
-    string videoName = "E:\\Downloads\\dumps\\wowthatscool" + to_string(sizeFactor) + ".avi";
+    string videoName = "result.avi";
     int codec = VideoWriter::fourcc('M', 'J', 'P', 'G');
     v.open(videoName, codec, fps, outputSize, true);
 }
@@ -262,7 +261,8 @@ void VideoHandler::showResults(const cv::Mat& inputFrame
                                 , const cv::Mat& smoothed
                                 , const cv::Mat& filteredImage
                                 , const cv::Mat& clusters
-                                , const cv::Mat& overlap) {
+                                , const cv::Mat& overlap
+                                , const cv::Mat& result) {
     if (!smoothed.empty()) {
         imshow("Smoothed frame", smoothed);
     }
@@ -278,7 +278,10 @@ void VideoHandler::showResults(const cv::Mat& inputFrame
     if (!overlap.empty()) {
         imshow("Overlap", overlap);
     }
-    cv::waitKey(1);
+    if (!result.empty()) {
+        imshow("Result", result);
+    }
+    cv::waitKey(15);
 }
 
 void VideoHandler::saveResults(const cv::Mat& inputFrame, const cv::Mat& smoothed, const cv::Mat& outputImage, int frameCounter) {

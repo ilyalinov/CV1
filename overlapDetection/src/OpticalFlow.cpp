@@ -190,8 +190,8 @@ void OpticalFlow::findComponentShift(int label) {
     }
 
     const float eps = 3.0;
-    componentShiftdy[label] += (mostCommondy) / 10.0;
-    componentShiftdx[label] += (mostCommondx) / 10.0;
+    componentShiftdy[label] += (mostCommondy) / 10.0f;
+    componentShiftdx[label] += (mostCommondx) / 10.0f;
     if (abs(componentShiftdy[label]) > eps || abs(componentShiftdx[label]) > eps + 3) {
         goodLabels.erase(std::remove(goodLabels.begin(), goodLabels.end(), label), goodLabels.end());
     }
